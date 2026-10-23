@@ -1,0 +1,17 @@
+# Python 环境与缓存
+.venv/
+__pycache__/
+*.py[cod]
+
+# 本机环境配置
+.env
+.env.*
+!.env.example
+
+# 前端依赖与构建结果
+node_modules/
+dist/
+
+# 本机编辑器配置
+.idea/
+
