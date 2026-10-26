@@ -15,3 +15,7 @@ dist/
 # 本机编辑器配置
 .idea/
 
+#本机数据库及其辅助文件
+/backend/dev.sqlite3
+/backend/dev.sqlite3-*
+

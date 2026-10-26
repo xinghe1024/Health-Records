@@ -5,5 +5,10 @@ description = "Add your description here"
 requires-python = ">=3.11"
 dependencies = [
     "fastapi>=0.161.1",
+    "pydantic-settings>=2.16.1",
+    "tortoise-orm>=1.1,<2",
     "uvicorn[standard]>=0.54.0",
 ]
+
+[tool.tortoise]
+tortoise_orm = "app.infrastructure.database.config.TORTOISE_ORM"
