@@ -12,3 +12,9 @@ dependencies = [
 
 [tool.tortoise]
 tortoise_orm = "app.infrastructure.database.config.TORTOISE_ORM"
+
+[dependency-groups]
+dev = [
+    "httpx2>=2.16.0",
+    "pytest>=9.1.1",
+]

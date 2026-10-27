@@ -9,7 +9,9 @@ class PatientResponse(BaseModel):
 
 class PatientCreate(BaseModel):
     name: str = Field(min_length=1, max_length=50)
+    model_config = ConfigDict(str_strip_whitespace=True)
 
 
 class PatientUpdate(BaseModel):
     name: str = Field(min_length=1, max_length=50)
+    model_config = ConfigDict(str_strip_whitespace=True)
