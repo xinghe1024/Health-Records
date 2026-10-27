@@ -100,3 +100,33 @@ def test_list_patients_with_pagination(test_app: FastAPI):
         )
         assert again_list_response.status_code == 200
         assert again_list_response.json() == []
+
+
+@pytest.mark.parametrize(
+    "query_params",
+    [
+        {"limit": 0},
+        {"limit": 101},
+        {"offset": -1},
+    ],
+)
+def test_list_patients_rejects_invalid_pagination(
+    test_app: FastAPI,
+    query_params: dict[str, int],
+):
+    with TestClient(test_app) as client:
+        response = client.get("/api/patient", params=query_params)
+        assert response.status_code == 422
+
+
+def test_update_missing_patient_does_not_create_it(test_app: FastAPI):
+    with TestClient(test_app) as client:
+        response = client.put(
+            "/api/patient/1",
+            json={"name": "修改后的患者"},
+        )
+        assert response.status_code == 404
+
+        list_response = client.get("/api/patient")
+        assert list_response.status_code == 200
+        assert list_response.json() == []
