@@ -1,25 +1,39 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
 import { mainRoutes } from '@/router/routes'
+import { useRoute, useRouter } from 'vue-router'
+import { useUserStore } from '@/stores/user'
 import { useHealthStore } from '@/stores/health'
 
 const route = useRoute()      // 当前路由（响应式）
 const router = useRouter()    // 路由实例（用来跳转）
-const store = useHealthStore()
+const userStore = useUserStore()
+const healthStore = useHealthStore()
 
 const collapsed = ref(false)
 const mobileOpen = ref(false)
 
 // 从路由表生成菜单，不再手写第二份
 const menus = mainRoutes.map(item => ({ name: item.name, ...item.meta }))
-
 const title = computed(() => route.meta.title)
+
+const profileSubtitle = computed(() => {
+    const profile = userStore.profile
+    if (!profile) return ''
+
+    const conditionText = profile.conditions.join('、')
+    const ageText = `${profile.age} 岁`
+
+    return [ conditionText, ageText ].filter(Boolean).join('·')
+})
 
 // 路由变化时关闭手机端侧边栏
 watch(() => route.name, () => { mobileOpen.value = false })
 
-onMounted(store.init)
+onMounted( () =>{
+  userStore.loadProfile()
+  healthStore.loadDashboard()
+})
 
 </script>
 
@@ -67,20 +81,21 @@ onMounted(store.init)
                     <button class="icon-btn"><el-icon>
                             <Bell />
                         </el-icon><i class="dot"></i></button>
-                    <el-dropdown @command="store.changePatient">
+                    <el-dropdown>
                         <div class="profile">
-                            <span class="avatar">{{ store.currentPatient?.name?.slice(0, 1) || '张' }}</span>
-                            <span class="profile-copy"><b>{{ store.currentPatient?.name }}</b><small> 糖尿病 23
-                                    岁</small></span>
+                            <span class="avatar">{{ userStore.profile?.name?.slice(0,1) || '张' }}</span>
+                            <span class="profile-copy">
+                                <b>{{ userStore.profile?.name }}</b>
+                                <small>{{ profileSubtitle }}</small>
+                            </span>
                             <el-icon>
                                 <ArrowDown />
                             </el-icon>
                         </div>
                         <template #dropdown>
                             <el-dropdown-menu>
-                                <el-dropdown-item v-for="p in store.patients" :key="p.id" :command="p.id">
-                                    {{ p.name }} · 糖尿病
-                                </el-dropdown-item>
+                                <el-dropdown-item disabled>
+                                    个人资料</el-dropdown-item> 
                             </el-dropdown-menu>
                         </template>
                     </el-dropdown>

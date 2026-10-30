@@ -1,43 +1,20 @@
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import { defineStore } from 'pinia'
-import { listPatients } from '@/api/patient'
-
+import { getDashboard } from '@/api/dashboard'
 
 export const useHealthStore = defineStore('health', () => {
-  const patientId = ref(null)
-  const patients = ref([])
   const dashboard = ref(null)
   const loading = ref(false)
 
-  const currentPatient = computed(() => {
-    return patients.value.find(
-      patient => patient.id === patientId.value,
-    ) ?? null
-  })
-
-  async function init() {
-  loading.value = true
-
-  try {
-    patients.value = await listPatients()
-    patientId.value = patients.value[0]?.id ?? null
-  } finally {
-    loading.value = false
-  }
+  async function loadDashboard() {
+    loading.value = true
+    try {
+      dashboard.value = await getDashboard()
+    } finally {
+      // 无论成功还是失败都要关闭 loading，否则页面会一直转圈
+      loading.value = false
+    }
   }
 
-  function changePatient(id) {
-    patientId.value = id
-  }
-
-  async function refreshDashboard() { dashboard.value = await healthApi.dashboard(patientId.value) }
-
-  return {
-    patientId,
-    patients,
-    currentPatient,
-    loading,
-    init,
-    changePatient,
-  }
+  return { dashboard, loading, loadDashboard }
 })

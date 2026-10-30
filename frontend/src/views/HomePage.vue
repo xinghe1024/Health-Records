@@ -3,15 +3,16 @@
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useHealthStore } from '../stores/health'
-
+import { useUserStore } from '../stores/user'
 
 import MetricCard from '../components/MetricCard.vue'
 import EChart from '../components/EChart.vue'
 
 const router = useRouter()
 
-const store = useHealthStore()
-const data = computed(() => store.dashboardData)
+const healthStore = useHealthStore()
+const userStore = useUserStore()
+const data = computed(() => healthStore.dashboard)
 
 const greeting = new Date().getHours() < 12 ? '早上好' : new Date().getHours() < 18 ? '下午好' : '晚上好'
 
@@ -32,13 +33,13 @@ const chartOption = computed(() => ({
         <div class="welcome-banner">
             <div class="welcome-copy">
                 <span class="eyebrow">PERSONAL HEALTH OVERVIEW</span>
-                <h1>{{ greeting }}，{{ data.patient.name }} <span>👋</span></h1>
+                <h1>{{ greeting }}，{{ userStore.profile?.name }} <span>👋</span></h1>
                 <p>今天也要好好照顾自己。您的血糖状态整体平稳，继续保持。</p>
                 <div class="banner-status">
                     <span>
                         <i></i> 今日风险等级：<b>低风险</b>
                     </span>
-                    <span>连续记录 <b>{{ data.metrics.streak }}天</b>
+                    <span>连续记录 <b>{{ data.metrics.streak_days }}天</b>
                     </span>
                 </div>
             </div>
@@ -54,10 +55,10 @@ const chartOption = computed(() => ({
             </div>
         </div>
         <div class="metric-grid">
-            <MetricCard label="平均血糖" :value="data.avg" unit="mmol/L" trend="较上周 ↓ 0.4" icon="Odometer" />
+            <MetricCard label="平均血糖" :value="data.metrics.avg_glucose" unit="mmol/L" trend="较上周 ↓ 0.4" icon="Odometer" />
             <MetricCard label="糖化血红蛋白" :value="data.metrics.hba1c" unit="%" trend="目标 < 7.0%" icon="DataLine"
                 tone="blue" />
-            <MetricCard label="血糖达标率" :value="data.metrics.targetRate" unit="%" trend="较上周 ↑ 6%" icon="CircleCheck"
+            <MetricCard label="血糖达标率" :value="data.metrics.target_rate" unit="%" trend="较上周 ↑ 6%" icon="CircleCheck"
                 tone="amber" />
             <MetricCard label="身体质量指数" :value="data.metrics.bmi" unit="BMI" trend="轻度超重" icon="ScaleToOriginal"
                 tone="purple" />
@@ -92,7 +93,7 @@ const chartOption = computed(() => ({
                     <span class="progress-ring">2/4</span>
                 </div>
                 <div class="task-list">
-                    <div v-for="task in data.todayTasks" :key="task.id" class="task-item" :class="{ done: task.done }">
+                    <div v-for="task in data.today_tasks" :key="task.id" class="task-item" :class="{ done: task.done }">
                         <span class="task-check">
                             <el-icon>
                                 <Check v-if="task.done" />
