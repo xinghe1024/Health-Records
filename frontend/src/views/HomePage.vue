@@ -55,7 +55,8 @@ const chartOption = computed(() => ({
             </div>
         </div>
         <div class="metric-grid">
-            <MetricCard label="平均血糖" :value="data.metrics.avg_glucose" unit="mmol/L" trend="较上周 ↓ 0.4" icon="Odometer" />
+            <MetricCard label="平均血糖" :value="data.metrics.avg_glucose" unit="mmol/L" trend="较上周 ↓ 0.4"
+                icon="Odometer" />
             <MetricCard label="糖化血红蛋白" :value="data.metrics.hba1c" unit="%" trend="目标 < 7.0%" icon="DataLine"
                 tone="blue" />
             <MetricCard label="血糖达标率" :value="data.metrics.target_rate" unit="%" trend="较上周 ↑ 6%" icon="CircleCheck"
