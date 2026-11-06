@@ -35,3 +35,16 @@ export function getGlucoseStatus(value, periodValue) {
   if(value > max) return 'high'
   return 'normal'
 }
+
+// 血糖状态的显示信息
+export const GLUCOSE_STATUS_DISPLAY = {
+  low: { label: '偏低', tagType: 'warning' },
+  normal: { label: '正常', tagType: 'success' },
+  high: { label: '偏高', tagType: 'danger' },
+  unknown: { label: '未知', tagType: 'info' },
+}
+
+// 根据时段代码获取显示标签，如果找不到则返回 '未知'
+export function getPeriodLabel(periodValue) {
+  return findPeriod(periodValue)?.label ?? '未知'
+}
