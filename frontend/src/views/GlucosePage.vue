@@ -1,13 +1,9 @@
 <script setup>
-
 import { computed, onMounted, ref } from 'vue'
 import dayjs from 'dayjs'
 import { getGlucoseSummary, listGlucoseRecords } from '@/api/glucose'
-import {
-    GLUCOSE_STATUS_DISPLAY,
-    getGlucoseStatus,
-    getPeriodLabel,
-} from '@/constants/glucose'
+import { GLUCOSE_STATUS_DISPLAY, getGlucoseStatus, getPeriodLabel } from '@/constants/glucose'
+import GlucoseRecordDialog from '@/components/glucose/GlucoseRecordDialog.vue'
 
 const records = ref([])
 const summary = ref(null)
@@ -21,6 +17,9 @@ const summaryItems = computed(() => [
     { label: '最低血糖', value: summary.value?.min_glucose, unit: 'mmol/L' },
     { label: '记录次数', value: summary.value?.count, unit: '次' },
 ])
+
+const dialogVisible = ref(false)
+
 
 // 将 ISO 时间转换为用户所在时区的显示格式
 function formatMeasuredAt(measuredAt) {
@@ -69,6 +68,7 @@ onMounted(loadGlucoseData)
                 <h1>血糖监测</h1>
                 <p>记录并追踪每日血糖变化</p>
             </div>
+            <el-button type="primary" size="large" icon="Plus" @click="dialogVisible = true">新增记录</el-button>
         </div>
 
         <div class="summary-strip">
@@ -98,6 +98,7 @@ onMounted(loadGlucoseData)
                 <el-table-column label="备注" prop="note" />
             </el-table>
         </div>
+        <GlucoseRecordDialog v-model="dialogVisible" @created="loadGlucoseData" />
     </section>
 </template>
 
