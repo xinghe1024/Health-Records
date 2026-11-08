@@ -1,7 +1,8 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
 import dayjs from 'dayjs'
-import { getGlucoseSummary, listGlucoseRecords } from '@/api/glucose'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { deleteGlucoseRecord, getGlucoseSummary, listGlucoseRecords } from '@/api/glucose'
 import { GLUCOSE_STATUS_DISPLAY, getGlucoseStatus, getPeriodLabel } from '@/constants/glucose'
 import GlucoseRecordDialog from '@/components/glucose/GlucoseRecordDialog.vue'
 
@@ -56,6 +57,32 @@ async function loadGlucoseData() {
     }
 }
 
+// 删除一条记录：先二次确认，成功后重新加载列表与统计
+async function handleDelete(record) {
+    const confirmed = await ElMessageBox.confirm(
+        `确定删除 ${record.measuredAtText} 的血糖记录（${record.value} mmol/L）吗？删除后无法恢复。`,
+        '删除确认',
+        { type: 'warning', confirmButtonText: '删除', cancelButtonText: '取消' },
+    )
+        .then(() => true)
+        .catch(() => false)
+    if (!confirmed) return
+
+    try {
+        await deleteGlucoseRecord(record.id)
+        ElMessage.success('已删除血糖记录')
+        await loadGlucoseData()
+    } catch (error) {
+        if (error.response?.status === 404) {
+            ElMessage.warning('血糖记录不存在，可能已被删除')
+            await loadGlucoseData()
+        } else {
+            console.error(error)
+            ElMessage.error('删除血糖记录失败，请稍后再试')
+        }
+    }
+}
+
 onMounted(loadGlucoseData)
 
 </script>
@@ -96,6 +123,11 @@ onMounted(loadGlucoseData)
                     </template>
                 </el-table-column>
                 <el-table-column label="备注" prop="note" />
+                <el-table-column label="操作" width="80" fixed="right">
+                    <template #default="{ row }">
+                        <el-button link type="danger" @click="handleDelete(row)">删除</el-button>
+                    </template>
+                </el-table-column>
             </el-table>
         </div>
         <GlucoseRecordDialog v-model="dialogVisible" @created="loadGlucoseData" />
