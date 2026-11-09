@@ -1,24 +1,30 @@
-// 血糖目标范围（mmol/L），通用参考值，并非个人医疗建议
-const FASTING_TARGET = { min: 4.4, max: 7.0 }
-const NON_FASTING_TARGET = { min: 4.4, max: 10.0 }
+// 目标范围分组（mmol/L），通用参考值，并非个人医疗建议
+export const TARGET_GROUPS = [
+  { value: 'fasting', label: '空腹/餐前', min: 4.4, max: 7.0 },
+  { value: 'non_fasting', label: '餐后/其他', min: 4.4, max: 10.0 },
+]
 
-// 测量时段：value 存入数据库，label 用于显示
+// 根据分组代码查找目标范围
+export function findTargetGroup(groupValue) {
+  return TARGET_GROUPS.find(group => group.value === groupValue)
+}
+
+// 测量时段：value 存入数据库，label 用于显示，group 决定使用哪一组目标范围
 export const MEASURE_PERIODS = [
-  { value: 'fasting', label: '空腹', target: FASTING_TARGET },
-  { value: 'after_breakfast', label: '早餐后', target: NON_FASTING_TARGET },
-  { value: 'before_lunch', label: '午餐前', target: FASTING_TARGET },
-  { value: 'after_lunch', label: '午餐后', target: NON_FASTING_TARGET },
-  { value: 'before_dinner', label: '晚餐前', target: FASTING_TARGET },
-  { value: 'after_dinner', label: '晚餐后', target: NON_FASTING_TARGET },
-  { value: 'bedtime', label: '睡前', target: NON_FASTING_TARGET },
-  { value: 'random', label: '随机', target: NON_FASTING_TARGET },
+  { value: 'fasting', label: '空腹', group: 'fasting' },
+  { value: 'after_breakfast', label: '早餐后', group: 'non_fasting' },
+  { value: 'before_lunch', label: '午餐前', group: 'fasting' },
+  { value: 'after_lunch', label: '午餐后', group: 'non_fasting' },
+  { value: 'before_dinner', label: '晚餐前', group: 'fasting' },
+  { value: 'after_dinner', label: '晚餐后', group: 'non_fasting' },
+  { value: 'bedtime', label: '睡前', group: 'non_fasting' },
+  { value: 'random', label: '随机', group: 'non_fasting' },
 ]
 
 // 根据时段代码查找配置
 export function findPeriod(periodValue) {
   return MEASURE_PERIODS.find(period => period.value === periodValue)
 }
-
 
 // 判断一次血糖是否在目标范围内，返回 'low' | 'normal' | 'high' | 'unknown'
 export function getGlucoseStatus(value, periodValue) {
@@ -29,7 +35,7 @@ export function getGlucoseStatus(value, periodValue) {
     return 'unknown'
   }
 
-  const { min, max } = period.target
+  const { min, max } = findTargetGroup(period.group)
   
   if(value < min) return 'low'
   if(value > max) return 'high'
