@@ -2,7 +2,7 @@
 import { computed, onMounted, ref } from 'vue'
 import dayjs from 'dayjs'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { deleteGlucoseRecord, getGlucoseSummary, listGlucoseRecords } from '@/api/glucose'
+import { deleteGlucoseRecord } from '@/api/glucose'
 import {
     GLUCOSE_STATUS_DISPLAY,
     getGlucoseStatus,
@@ -10,10 +10,11 @@ import {
 } from '@/constants/glucose'
 import GlucoseRecordDialog from '@/components/glucose/GlucoseRecordDialog.vue'
 import GlucoseTrendChart from '@/components/glucose/GlucoseTrendChart.vue'
+import { useGlucoseData } from '@/composables/useGlucoseData'
 
-const records = ref([])
-const summary = ref(null)
-const loading = ref(false)
+const dialogVisible = ref(false)
+
+const { records, summary, loading, loadGlucoseData } = useGlucoseData()
 
 // 统计条的显示项，summary 为 null 时各项取值都是 undefined
 const summaryItems = computed(() => [
@@ -23,8 +24,6 @@ const summaryItems = computed(() => [
     { label: '最低血糖', value: summary.value?.min_glucose, unit: 'mmol/L' },
     { label: '记录次数', value: summary.value?.count, unit: '次' },
 ])
-
-const dialogVisible = ref(false)
 
 // 将 ISO 时间转换为用户所在时区的显示格式
 function formatMeasuredAt(measuredAt) {
@@ -45,21 +44,6 @@ const tableRows = computed(() =>
         statusDisplay: getStatusDisplay(record),
     })),
 )
-
-// 同时请求列表和统计，之后新增、删除成功时也会复用
-async function loadGlucoseData() {
-    loading.value = true
-    try {
-        const [recordList, summaryData] = await Promise.all([
-            listGlucoseRecords(),
-            getGlucoseSummary(),
-        ])
-        records.value = recordList
-        summary.value = summaryData
-    } finally {
-        loading.value = false
-    }
-}
 
 // 删除一条记录：先二次确认，成功后重新加载列表与统计
 async function handleDelete(record) {
