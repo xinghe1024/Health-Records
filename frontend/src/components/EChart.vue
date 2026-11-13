@@ -10,11 +10,21 @@ const props = defineProps({
 const el = ref()
 let chart
 let observer
+let lastSize = null
 
 onMounted(() => {
     chart = echarts.init(el.value)
     chart.setOption(props.option)
-    observer = new ResizeObserver(() => chart?.resize())
+    observer = new ResizeObserver(([entry]) => {
+        const { width, height } = entry.contentRect
+        // ResizeObserver 在 observe() 时一定会触发一次；ECharts 的 resize() 会以 duration: 0 重画，
+        // 若此时 resize 会打断入场动画，所以只在尺寸真的改变时才 resize
+        if (lastSize && width === lastSize.width && height === lastSize.height) return
+        const isFirstCallback = lastSize === null
+        lastSize = { width, height }
+        if (isFirstCallback) return
+        chart?.resize()
+    })
     observer.observe(el.value)
 })
 
