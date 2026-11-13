@@ -1,15 +1,6 @@
 export const mockDashboard = {
-  glucose: [
-    { value: 6.8, measured_at: '2026-04-01 07:00:00' },
-    { value: 9.2, measured_at: '2026-04-01 09:30:00' },
-    { value: 6.5, measured_at: '2026-04-02 07:00:00' },
-    { value: 8.8, measured_at: '2026-04-02 09:30:00' },
-    { value: 7.1, measured_at: '2026-04-03 07:00:00' },
-  ],
   metrics: {
-    avg_glucose: 7.9,
     hba1c: 6.7,
-    target_rate: 82,
     bmi: 26.4,
     streak_days: 12,
   },

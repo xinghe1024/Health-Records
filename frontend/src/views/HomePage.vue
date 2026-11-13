@@ -1,30 +1,22 @@
 <script setup>
-
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useHealthStore } from '../stores/health'
 import { useUserStore } from '../stores/user'
 
-import MetricCard from '../components/MetricCard.vue'
-import EChart from '../components/EChart.vue'
+import { useGlucoseData } from '@/composables/useGlucoseData'
+import MetricCard from '@/components/MetricCard.vue'
+import GlucoseTrendChart from '@/components/glucose/GlucoseTrendChart.vue'
 
 const router = useRouter()
 
 const healthStore = useHealthStore()
 const userStore = useUserStore()
 const data = computed(() => healthStore.dashboard)
-
 const greeting = new Date().getHours() < 12 ? '早上好' : new Date().getHours() < 18 ? '下午好' : '晚上好'
+const { records, summary, loadGlucoseData } = useGlucoseData()
 
-//定义图标展示数据
-const chartOption = computed(() => ({
-    tooltip: { trigger: 'axis', backgroundColor: '#123c37', borderWidth: 0, textStyle: { color: '#fff' } },
-    grid: { left: 36, right: 20, top: 36, bottom: 32 },
-    xAxis: { type: 'category', boundaryGap: false, data: data.value?.glucose.map(x => x.measured_at.slice(5, 10)) || [], axisLine: { lineStyle: { color: '#dbe5e2' } }, axisLabel: { color: '#83918e' } },
-    yAxis: { type: 'value', min: 4, max: 12, splitLine: { lineStyle: { color: '#eef2f1', type: 'dashed' } }, axisLabel: { color: '#83918e' } },
-    series: [{ type: 'line', smooth: true, data: data.value?.glucose.map(x => x.value) || [], symbolSize: 8, lineStyle: { color: '#13a884', width: 3 }, itemStyle: { color: '#13a884', borderColor: '#fff', borderWidth: 2 }, areaStyle: { color: { type: 'linear', x: 0, y: 0, x2: 0, y2: 1, colorStops: [{ offset: 0, color: 'rgba(19,168,132,.28)' }, { offset: 1, color: 'rgba(19,168,132,0)' }] } }, markArea: { silent: true, itemStyle: { color: 'rgba(19,168,132,.055)' }, data: [[{ yAxis: 4.4 }, { yAxis: 7.8 }]] } }]
-}))
-
+onMounted(loadGlucoseData)
 
 </script>
 
@@ -55,11 +47,11 @@ const chartOption = computed(() => ({
             </div>
         </div>
         <div class="metric-grid">
-            <MetricCard label="平均血糖" :value="data.metrics.avg_glucose" unit="mmol/L" trend="较上周 ↓ 0.4"
+            <MetricCard label="平均血糖" :value="summary?.avg_glucose ?? '—'" unit="mmol/L" trend="较上周 ↓ 0.4"
                 icon="Odometer" />
             <MetricCard label="糖化血红蛋白" :value="data.metrics.hba1c" unit="%" trend="目标 < 7.0%" icon="DataLine"
                 tone="blue" />
-            <MetricCard label="血糖达标率" :value="data.metrics.target_rate" unit="%" trend="较上周 ↑ 6%" icon="CircleCheck"
+            <MetricCard label="血糖达标率" :value="summary?.target_rate ?? '—'" unit="%" trend="较上周 ↑ 6%" icon="CircleCheck"
                 tone="amber" />
             <MetricCard label="身体质量指数" :value="data.metrics.bmi" unit="BMI" trend="轻度超重" icon="ScaleToOriginal"
                 tone="purple" />
@@ -67,24 +59,7 @@ const chartOption = computed(() => ({
 
         <!-- 图表区域 -->
         <div class="content-grid main-grid">
-            <div class="panel trend-panel">
-                <div class="panel-head">
-                    <div>
-                        <span class="panel-kicker">GLUCOSE TREND</span>
-                        <h3>今日血糖趋势</h3>
-                    </div>
-                    <button class="text-btn" @click="router.push({ name: 'glucose' })">查看详情
-                        <el-icon>
-                            <ArrowRight />
-                        </el-icon>
-                    </button>
-                </div>
-                <div class="chart-legend">
-                    <span><i class="legend-dot green"></i>血糖值</span>
-                    <span class="target-pill">目标范围4.4-7.8</span>
-                </div>
-                <EChart :option="chartOption" height="280px" />
-            </div>
+            <GlucoseTrendChart :records="records" />
             <div class="panel tasks-panel">
                 <div class="panel-head">
                     <div>
