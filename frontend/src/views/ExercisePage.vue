@@ -2,13 +2,13 @@
 import { ref, onMounted, computed } from 'vue'
 import dayjs from 'dayjs'
 
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 
 import {
     getExerciseTypeLabel,
     getIntensityLabel,
 } from '@/constants/exercise'
-import { listExerciseRecords } from '@/api/exercise'
+import { listExerciseRecords, deleteExerciseRecord } from '@/api/exercise'
 import ExerciseRecordDialog from '@/components/exercise/ExerciseRecordDialog.vue'
 
 const records = ref([])
@@ -43,6 +43,31 @@ async function loadExerciseData() {
     }
 }
 
+async function handleDelete(row) {
+    const confirmed = await ElMessageBox.confirm(
+        `确定删除 ${row.performedAtText} 的「${row.typeLabel}」记录（${row.duration_min} 分钟）吗？删除后无法恢复。`,
+        `确定删除`,
+        { type: 'warning', confirmButtonText: '删除', cancelButtonText: '取消' },
+    )
+        .then(() => true)
+        .catch(() => false)
+    if (!confirmed) return
+
+    try {
+        await deleteExerciseRecord(row.id)
+        ElMessage.success('已删除运动记录')
+        await loadExerciseData()
+    } catch (error) {
+        if (error.response?.status === 404) {
+            ElMessage.warning('运动记录不存在，可能已被删除')
+            await loadExerciseData()
+        } else {
+            console.error(error)
+            ElMessage.error('删除运动记录失败，请稍后再试')
+        }
+    }
+}
+
 onMounted(loadExerciseData)
 
 </script>
@@ -68,6 +93,11 @@ onMounted(loadExerciseData)
                 <el-table-column label="运动强度" prop="intensityLabel" width="100" />
                 <el-table-column label="消耗热量 (kcal)" prop="caloriesText" width="120" />
                 <el-table-column label="备注" prop="note" />
+                <el-table-column label="操作" width="80" fixed="right">
+                    <template #default="{ row }">
+                        <el-button link type="danger" @click="handleDelete(row)">删除</el-button>
+                    </template>
+                </el-table-column>
             </el-table>
         </div>
         <ExerciseRecordDialog v-model="dialogVisible" @created="loadExerciseData" />
