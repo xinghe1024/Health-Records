@@ -9,9 +9,11 @@ import {
     getIntensityLabel,
 } from '@/constants/exercise'
 import { listExerciseRecords } from '@/api/exercise'
+import ExerciseRecordDialog from '@/components/exercise/ExerciseRecordDialog.vue'
 
 const records = ref([])
 const loading = ref(false)
+const dialogVisible = ref(false)
 
 // 将 ISO 时间转换为用户所在时区的显示格式
 function formatPerformedAt(performedAt) {
@@ -53,6 +55,7 @@ onMounted(loadExerciseData)
                 <h1>运动记录</h1>
                 <p>记录并追踪每日运动情况</p>
             </div>
+            <el-button type="primary" size="large" icon="Plus" @click="dialogVisible = true">新增记录</el-button>
         </div>
         <div class="panel table-panel">
             <div class="panel-head">
@@ -67,6 +70,7 @@ onMounted(loadExerciseData)
                 <el-table-column label="备注" prop="note" />
             </el-table>
         </div>
+        <ExerciseRecordDialog v-model="dialogVisible" @created="loadExerciseData" />
     </section>
 </template>
 
