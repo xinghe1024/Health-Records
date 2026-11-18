@@ -1,3 +1,5 @@
+export const OTHER_EXERCISE_TYPE = 'other'
+
 export const EXERCISE_TYPES = [
   { value: 'yoga', label: '瑜伽' },
   { value: 'tai_chi', label: '太极' },  
@@ -6,7 +8,7 @@ export const EXERCISE_TYPES = [
   { value: 'cycling', label: '骑行' },
   { value: 'swimming', label: '游泳' },
   { value: 'strength_training', label: '力量训练' },
-  { value: 'other', label: '其他' },
+  { value: OTHER_EXERCISE_TYPE, label: '其他' },
 ]
 
 export function getExerciseTypeLabel(typeValue) {
@@ -22,4 +24,10 @@ export const EXERCISE_INTENSITY = [
 
 export function getIntensityLabel(intensityValue) {
     return EXERCISE_INTENSITY.find(intensity => intensity.value === intensityValue)?.label ?? '未知'
+}
+
+export function getExerciseDisplayName(record) {
+    const label = getExerciseTypeLabel(record.exercise_type)
+    if (record.exercise_type !== OTHER_EXERCISE_TYPE) return label
+    return record.custom_type_name || label
 }

@@ -5,8 +5,8 @@ import dayjs from 'dayjs'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
 import {
-    getExerciseTypeLabel,
     getIntensityLabel,
+    getExerciseDisplayName,
 } from '@/constants/exercise'
 import { listExerciseRecords, deleteExerciseRecord } from '@/api/exercise'
 import ExerciseRecordDialog from '@/components/exercise/ExerciseRecordDialog.vue'
@@ -24,7 +24,7 @@ const tableRows = computed(() => {
     return records.value.map(record => ({
         ...record,
         performedAtText: formatPerformedAt(record.performed_at),
-        typeLabel: getExerciseTypeLabel(record.exercise_type),
+        typeLabel: getExerciseDisplayName(record),
         intensityLabel: getIntensityLabel(record.intensity),
         caloriesText: record.calories_burned ?? '—',
     }))

@@ -5,7 +5,8 @@ import { ElMessage } from 'element-plus'
 import { createExerciseRecord } from '@/api/exercise'
 import {
     EXERCISE_TYPES,
-    EXERCISE_INTENSITY
+    EXERCISE_INTENSITY,
+    OTHER_EXERCISE_TYPE,
 } from '@/constants/exercise'
 
 // 弹窗显示状态，由父组件通过 v-model 控制
@@ -20,6 +21,7 @@ const submitting = ref(false)
 function createEmptyForm() {
     return {
         exercise_type: null,
+        custom_type_name: '',
         performed_at: dayjs().format('YYYY-MM-DD[T]HH:mm:ssZ'),
         duration_min: null,
         intensity: null,
@@ -35,6 +37,7 @@ const rules = {
     performed_at: [{ required: true, message: '请选择运动时间', trigger: 'change' }],
     duration_min: [{ required: true, message: '请输入运动时长', trigger: 'blur' }],
     intensity: [{ required: true, message: '请选择运动强度', trigger: 'change' }],
+    custom_type_name: [{ required: true, whitespace: true, message: '请输入运动名称', trigger: 'blur' }],
 }
 
 // 每次打开弹窗时重置表单，避免残留上一次的输入
@@ -48,6 +51,14 @@ function isFutureDate(date) {
     return date > new Date()
 }
 
+// 组装要送出的数据：只有「其他」类型才保留自定义名称
+function buildPayload() {
+    return {
+        ...form,
+        custom_type_name: form.exercise_type === OTHER_EXERCISE_TYPE ? form.custom_type_name : null,
+    }
+}
+
 async function handleSubmit() {
     // 校验不通过时 validate 会 reject，这里统一转换成 false
     const isValid = await formRef.value.validate().catch(() => false)
@@ -55,7 +66,7 @@ async function handleSubmit() {
 
     submitting.value = true
     try {
-        await createExerciseRecord({ ...form })
+        await createExerciseRecord(buildPayload())
         ElMessage.success('已新增运动记录')
         visible.value = false
         emit('created')
@@ -76,6 +87,9 @@ async function handleSubmit() {
                     <el-option v-for="type in EXERCISE_TYPES" :key="type.value" :label="type.label"
                         :value="type.value" />
                 </el-select>
+            </el-form-item>
+            <el-form-item v-if="form.exercise_type === OTHER_EXERCISE_TYPE" label="运动名称" prop="custom_type_name">
+                <el-input v-model="form.custom_type_name" maxlength="20" placeholder="例如：跳绳" />
             </el-form-item>
             <el-form-item label="运动时间" prop="performed_at">
                 <el-date-picker v-model="form.performed_at" type="datetime" value-format="YYYY-MM-DD[T]HH:mm:ssZ"
