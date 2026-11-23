@@ -3,7 +3,9 @@ import { USE_MOCK } from "./config"
 import {
   mockCreateExerciseRecord,
   mockDeleteExerciseRecord,
-  mockListExerciseRecords
+  mockListExerciseRecords,
+  mockGetExerciseSummary,
+  
 } from "./mock/exercise"
 
 export function listExerciseRecords() {
@@ -19,4 +21,9 @@ export function createExerciseRecord(payload) {
 export function deleteExerciseRecord(recordId) {
   if (USE_MOCK) return mockDeleteExerciseRecord(recordId)
   return http.delete(`/exercise-records/${recordId}`)
+}
+
+export function getExerciseSummary() {
+  if (USE_MOCK) return mockGetExerciseSummary()
+  return http.get('/exercise-records/summary')
 }
