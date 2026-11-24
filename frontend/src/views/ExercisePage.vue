@@ -7,13 +7,15 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import {
     getIntensityLabel,
     getExerciseDisplayName,
+    WEEKLY_EXERCISE_GOAL_MIN,
 } from '@/constants/exercise'
-import { listExerciseRecords, deleteExerciseRecord } from '@/api/exercise'
+import { listExerciseRecords, deleteExerciseRecord, getExerciseSummary } from '@/api/exercise'
 import ExerciseRecordDialog from '@/components/exercise/ExerciseRecordDialog.vue'
 
 const records = ref([])
 const loading = ref(false)
 const dialogVisible = ref(false)
+const summary = ref(null)
 
 // 将 ISO 时间转换为用户所在时区的显示格式
 function formatPerformedAt(performedAt) {
@@ -30,11 +32,23 @@ const tableRows = computed(() => {
     }))
 })
 
+// 统计条的显示项，summary 为 null 时各项取值都是 undefined
+const summaryItems = computed(() => [
+    { label: '本周运动', value: summary.value?.count, unit: '次' },
+    { label: '本周总时长', value: summary.value?.total_duration_min, unit: `/ ${WEEKLY_EXERCISE_GOAL_MIN} 分钟` },
+    { label: '平均每次', value: summary.value?.avg_duration_min, unit: '分钟' },
+    { label: '本周消耗', value: summary.value?.total_calories_burned, unit: 'kcal' },
+])
+
 async function loadExerciseData() {
     loading.value = true
     try {
-        const recordList = await listExerciseRecords()
+        const [recordList, summaryData] = await Promise.all([
+            listExerciseRecords(),
+            getExerciseSummary(),
+        ])
         records.value = recordList
+        summary.value = summaryData
     } catch (error) {
         ElMessage.error('获取运动记录失败，请稍后重试')
         console.error('获取运动记录失败', error)
@@ -46,7 +60,7 @@ async function loadExerciseData() {
 async function handleDelete(row) {
     const confirmed = await ElMessageBox.confirm(
         `确定删除 ${row.performedAtText} 的「${row.typeLabel}」记录（${row.duration_min} 分钟）吗？删除后无法恢复。`,
-        `确定删除`,
+        '删除确认',
         { type: 'warning', confirmButtonText: '删除', cancelButtonText: '取消' },
     )
         .then(() => true)
@@ -81,6 +95,16 @@ onMounted(loadExerciseData)
                 <p>记录并追踪每日运动情况</p>
             </div>
             <el-button type="primary" size="large" icon="Plus" @click="dialogVisible = true">新增记录</el-button>
+        </div>
+        <div class="summary-strip">
+            <template v-for="(item, index) in summaryItems" :key="item.label">
+                <i v-if="index > 0"></i>
+                <div>
+                    <span>{{ item.label }}</span>
+                    <strong>{{ item.value ?? '—' }}</strong>
+                    <small>{{ item.unit }}</small>
+                </div>
+            </template>
         </div>
         <div class="panel table-panel">
             <div class="panel-head">

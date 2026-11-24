@@ -1,4 +1,6 @@
 export const OTHER_EXERCISE_TYPE = 'other'
+// 每周中等强度运动的通用参考目标（分钟），并非个人医疗建议
+export const WEEKLY_EXERCISE_GOAL_MIN = 150
 
 export const EXERCISE_TYPES = [
   { value: 'yoga', label: '瑜伽' },
