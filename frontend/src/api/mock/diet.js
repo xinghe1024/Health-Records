@@ -10,8 +10,8 @@ function daysAgo(days, hour, minute = 0) {
   return dayjs().subtract(days, "day").hour(hour).minute(minute).second(0).format()
 }
 
-function hoursAgo(hour) {
-  return dayjs().subtract(hour, 'hour').format()
+function hoursAgo(hours) {
+  return dayjs().subtract(hours, 'hour').format()
 }
 
 // 加总有填写的数值，跳过 null；全部都没填写时回传 null（表示「不知道」，不是 0）
