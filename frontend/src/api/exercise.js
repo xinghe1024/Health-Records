@@ -5,7 +5,6 @@ import {
   mockDeleteExerciseRecord,
   mockListExerciseRecords,
   mockGetExerciseSummary,
-  
 } from "./mock/exercise"
 
 export function listExerciseRecords() {
